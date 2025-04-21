@@ -1,0 +1,463 @@
+DATANODE START
+cd /app/Hadoop/tmp/
+cd /app/Hadoop/tmp/dfs
+cd /app/Hadoop/tmp/dfsdata
+ls
+cd namenode/current
+cat VERSION
+COPY CLUSTERID ONLY
+cd..
+cd …
+cd datanode
+cd current
+sudo nano VERSION
+paste the cluster id here and remove pehle wali 
+/usr/local/Hadoop/sbin/stop-all.sh
+/usr/local/Hadoop/sbin/start-all.sh 
+
+#PRACTICAL 1
+#INSTALL, CONFIGURE AND RUN HADOOP
+cut -d: -f1 /etc/passwd 
+sudo deluser hduser 
+sudo killall -TERM -u hduser 
+sudo deluser --group hadoop 
+sudo rm -r -f /usr/local/hadoop/ 
+sudo apt update
+sudo apt install default-jdk 
+java -version 
+sudo addgroup hadoop 
+sudo adduser --ingroup hadoop hduser 
+sudo usermod -aG sudo hduser 
+su hduser
+ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa 
+cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys 
+chmod 0600 ~/.ssh/authorized_keys
+sudo nano /etc/sysctl.conf 
+net.ipv6.conf.all.disable_ipv6 = 1 
+net.ipv6.conf.default.disable_ipv6 = 1 
+net.ipv6.conf.lo.disable_ipv6 = 1 
+cd /usr/local
+sudo tar xvf /home/udit/Downloads/hadoop-3.2.3.tar.gz  
+sudo mv hadoop-3.2.3 hadoop 
+sudo chown -R hduser: hadoop hadoop 
+sudo nano $HOME/.bashrc 
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 
+export HADOOP_HOME=/usr/local/hadoop 
+export PATH=$PATH:$HADOOP_HOME/bin 
+export HADOOP_HDFS_HOME=$HADOOP_HOME 
+source ~/.bashrc 
+java -version
+hadoop version
+cd /usr/local
+sudo mkdir -p /app/hadoop/tmp 
+sudo chown hduser:hadoop /app/hadoop/tmp/
+cd /usr/local/hadoop/etc/hadoop/ 
+sudo nano hadoop-env.sh 
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+cd /usr/local/hadoop/etc/Hadoop
+sudo nano core-site.xml
+<configuration>
+<property>
+<name>hadoop.tmp.dir</name>
+<value>/app/hadoop/tmp</value>
+<description>A base for other temporarary directories</de>
+</property>
+<property>
+<name>fs.default.name</name>
+<value>hdfs://localhost:54310</value>
+<description>The name of the default file system.</descri>
+</property>
+</configuration>
+sudo nano mapred-site.xml 
+<configuration>
+<property>
+<name>mapred.job.tracker</name>
+<value>localhost:54311</value>
+<description>The host and port that the MapReduce job tra>
+at. If "local", then jobs are run in-process as a single >
+and reduce task.
+</description>
+</property>
+</configuration>
+sudo nano hdfs-site.xml 
+<configuration>
+<property>
+<name>dfs.namenode.name.dir</name>
+<value>/app/hadoop/tmp/dfsdata/namenode</value>
+</property>
+<property>
+<name>dfs.datanode.data.dir</name>
+<value>/app/hadoop/tmp/dfsdata/datanode</value>
+</property>
+<property>
+<name>dfs.replication</name>
+<value>1</value>
+<description>Default block replication.
+The actual number of replications can be specified when t>
+created. The default is used if replication is not specif>
+create time.
+</description>
+</property>
+</configuration>
+hdfs namenode -format 
+hdfs datanode -format 
+ssh localhost
+sudo apt-get install ssh 
+ssh localhost
+/usr/local/hadoop/sbin/start-all.sh
+jps 
+
+
+#PRACTICAL 2
+#HADOOP FMT
+su hduser
+ssh localhost
+sudo apt-get install ssh 
+ssh localhost
+/usr/local/hadoop/sbin/start-all.sh
+jps
+hadoop version
+http://localhost:9870
+cd /usr/local
+sudo mkdir -p /usr/local/sds_00
+ls
+sudo chmod -R 777 /usr/local/sds_00
+ls
+cd /usr/local/sds_00
+sudo nano uom.txt
+Twinkle, twinkle, little star,
+How I wonder what you are!
+Up above the world so high,
+Like a diamond in the sky.
+Twinkle, twinkle, little star,
+How I wonder what you are! 
+ls
+cat uom.txt
+cd /usr/local/hadoop/bin/
+hdfs dfs -mkdir /SDS
+hdfs dfs -ls /
+hdfs dfs -copyFromLocal /usr/local/sds_00/uom.txt /SDS
+hdfs dfs -ls /SDS
+hdfs dfs -cat /SDS/uom.txt
+
+
+#PRACTICAL 3
+#WORD COUNT
+su hduser
+ssh localhost
+sudo apt-get install ssh 
+ssh localhost
+/usr/local/hadoop/sbin/start-all.sh
+jps
+sudo nano bda.txt
+Twinkle, twinkle, little star,
+How I wonder what you are!
+Up above the world so high,
+Like a diamond in the sky.	 
+sudo chown hduser:hadoop /home/hduser/bda.txt
+hdfs dfs -put /home/hduser/bda.txt /
+hadoop jar /usr/local/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-3.2.3.jar wordcount /bda.txt /output
+hdfs dfs -head /output/part-r-00000
+hdfs dfs -mv /output/part-r-00000 /output/opt.txt
+hdfs dfs -ls /
+
+
+#PRACTICAL 4
+#INSTALL,RUN PIG 
+su hduser
+ssh localhost
+sudo apt-get install ssh 
+ssh localhost
+/usr/local/hadoop/sbin/start-all.sh
+jps
+wget https://downloads.apache.org/pig/pig-0.17.0/pig-0.17.0.tar.gz
+cd /usr/local/
+sudo tar xzvf /home/udit/Downloads/pig-0.17.0.tar.gz
+ls /home/udit/Downloads/pig-0.17.0.tar.gz
+sudo mv pig-0.17.0 pig
+ls
+nano ~/.bashrc
+export PIG_HOME=/usr/local/pig
+export PATH=$PIG_HOME/bin:$PATH
+export PIG_CLASSPATH=$HADOOP_HOME/conf
+source ~/.bashrc
+which pig
+pig --version
+sudo nano products.txt
+1,phone,45,mumbai,2023
+2,laptop,44,pune,2022
+pig -x local
+product = LOAD 'products.txt' USING PigStorage(',');
+dump product;
+hdfs dfs -put /usr/local/products.txt /
+pig
+product = LOAD 'hdfs://localhost:54310/products.txt' USING PigStorage(',');
+dump product;
+quit
+sudo nano m3.txt
+4,2,5,
+1,4,1
+9,4,5
+3,4,7 
+2,5,6
+3,5,9
+pig -x local
+m3=LOAD 'm3.txt' USING PigStorage(',');
+dump m3;
+m3 = LOAD 'm3.txt' USING PigStorage(',') as (a1:int,a2:int,a3:int);
+result_f = filter m3 by a3==6;
+dump result_f
+result_ob = ORDER m3 BY a1 ASC;
+dump result_ob;
+
+
+#PRACTICAL 5
+#HIVE
+su hduser
+ssh localhost
+sudo apt-get install ssh 
+ssh localhost
+/usr/local/hadoop/sbin/start-all.sh
+jps
+cd /usr/local/
+sudo tar xvzf /home/udit/Downloads/apache-hive-3.1.2-bin.tar.gz
+sudo mv apache-hive-3.1.2-bin/ hive
+sudo chmod 777 hive
+sudo nano ~/.bashrc
+export HIVE_HOME=/usr/local/hive
+export PATH=$PATH:$HIVE_HOME/bin
+source ~/.bashrc
+cd /usr/local/hive/bin     
+sudo nano hive-config.sh
+export HADOOP_HOME=/usr/local/hadoop
+hdfs dfs -mkdir /tmp
+hdfs dfs -chmod g+w /tmp
+hdfs dfs -chmod o+w /tmp
+hdfs dfs -mkdir -p /user/hive/warehouse
+hdfs dfs -chmod g+w /user/hive/warehouse
+hdfs dfs -chmod 777 /tmp
+hdfs dfs -chown -R hduser:supergroup /user/hive/warehouse
+hdfs dfs -chmod -R 777 /user/hive/warehouse
+hdfs dfs -ls /
+cd /$HIVE_HOME/bin
+sudo ./schematool -initSchema -dbType derby
+sudo rm lib/guava-19.0.jar
+sudo cp $HADOOP_HOME/share/hadoop/common/lib/guava-27.0-jre.jar /usr/local/hive/lib/
+cd /$HIVE_HOME/bin
+sudo ./schematool  -initSchema -dbType derby
+sudo rm -rf metastore_db
+cd /usr/local/hive/bin
+sudo ./hive
+create database company;
+show databases;
+create table employees (id int, name string, country string, department string, salary int) row format delimited fields terminated by ' ';
+quit;
+sudo nano employees.txt
+Alex USA CS 65700
+Bob UAE IT 45678
+SAM UK BT 67868
+sudo ./hive
+load data local inpath "./employees.txt" into table employees;
+select * from employees;
+
+
+#PRACTICAL 6
+#BUCKETING IN HIVE
+su hduser
+cd /usr/local/hive/bin
+sudo ./hive
+create database show_bucket;
+show databases;
+use show_bucket;
+create table emp_demo (id int, name string, salary int)
+row format delimited
+fields terminated by ',';
+show tables;
+quit;
+sudo nano emp_details.txt
+1,Harsh,95000
+2,Ramdas,85000
+3,Omkar,90000
+4,Shubham,80000
+5,Kaushal,75000
+ls
+sudo ./hive
+use show_bucket
+load data local inpath 'emp_details.txt' into table emp_demo;
+DESCRIBE emp_demo;
+set hive.enforce.bucketing = true;
+create table emp_bucket (id int, name string, salary int)
+row format delimited
+fields terminated by ',';
+BROWSER /user/hive/warehouse/show_bucket.db
+insert overwrite table emp_bucket select * from emp_demo; 
+quit;
+hdfs dfs -ls /user/hive/warehouse/show_bucket.db/emp_bucket
+BROWSER /user/hive/warehouse/show_bucket.db/emp_bucket
+DROP DATABASE IF EXISTS student CASCADE;
+DROP DATABASE IF EXISTS show_bucket CASCADE;
+DROP DATABASE IF EXISTS company CASCADE;
+DROP DATABASE IF EXISTS school CASCADE;
+show databases;
+quit;
+hdfs -dfs -rm -r /SDS
+cd /usr/local
+sudo rm -rf sds_a016
+
+
+#PRACTICAL 7
+#SPARK
+su hduser
+sudo apt update && sudo apt upgrade -y
+sudo apt install openjdk-17-jdk -y
+java -version
+sudo apt install scala -y
+scala -version
+cd /opt
+sudo wget https://downloads.apache.org/spark/spark-3.5.5/spark-3.5.5-bin-hadoop3.tgz
+sudo tar -xvzf spark-3.5.5-bin-hadoop3.tgz
+sudo mv spark-3.5.5-bin-hadoop3 spark
+nano ~/.bashrc
+export SPARK_HOME=/opt/spark
+export PATH=$SPARK_HOME/bin:$SPARK_HOME/sbin:$PATH
+export PYSPARK_PYTHON=/usr/bin/python3
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+source ~/.bashrc
+export SPARK_LOG_DIR=/home/hduser/spark-logs
+mkdir -p $SPARK_LOG_DIR
+start-master.sh
+BROWSER http://localhost:8080
+start-worker.sh spark://ubuntu:7077
+spark-shell
+sc.appName
+:quit
+pyspark
+rdd = sc.parallelize([1, 2, 3, 4, 5])
+print(rdd.collect())	#python list
+squared_rdd = rdd.map(lambda x: x ** 2)
+print(squared_rdd.collect())  #map()
+even_rdd = rdd.filter(lambda x: x % 2 == 0)
+print(even_rdd.collect())  #filter()
+sum_rdd = rdd.reduce(lambda a, b: a + b)
+print(sum_rdd) #reduce
+
+
+#PRACTICAL 8
+#MONGODB
+mongod
+mongosh
+show dbs
+db
+use udit
+show collections;
+db.subjects
+db.subjects.insertOne({"name":"bda"})
+db.subjects.insertOne({"name":"mn"})
+db.subjects.insertOne({"name":"ip"})
+db.subjects.insertOne({"name":"msa"})
+show collections;
+db.subjects.find();
+db.subjects.find({"name": "bda"});
+OPEN CMD python -m pip install pymongo
+OPEN PYTHON IDE DIRECT
+import pymongo
+from pymongo import MongoClient              	     
+myclient = MongoClient()                                    
+myclient	
+
+myclient= MongoClient(host="localhost",port=27017)
+
+print(myclient.list_database_names())
+
+db = myclient["udit"]
+import pymongo
+myclient = MongoClient(host="localhost", port=27017)
+db = myclient.mlib 
+col=db.subjects1                                                                 
+dict = {"name":"ds", "sem":"1"}	           			 
+x=col.insert_one(dict)                                      
+
+print(client1.list_database_names())
+
+
+#PRACTICAL 9
+#APACHE STORM
+sudo apt install -y zookeeperd
+cd /opt
+sudo systemctl start zookeeper
+sudo systemctl enable zookeeper
+sudo systemctl status zookeeper
+echo "rouk" | nc localhost 2181
+sudo wget https://dlcdn.apache.org/storm/apache-storm-2.8.0/apache-storm-2.8.0.tar.gz
+sudo tar -xvzf apache-storm-2.8.0.tar.gz
+sudo mv apache-storm-2.8.0 storm
+ls
+sudo nano /opt/storm/conf/storm.yaml
+storm.zookeeper.servers:
+     - "localhost"
+
+        nimbus.seeds: ["localhost"]
+
+        supervisor.slots.ports:
+    - 6700
+    - 6701
+    - 6702
+    - 6703
+ui.port: 8080
+CTRL S CTRL X
+sudo mkdir /opt/storm/tmp
+IN SEPARATE TAB
+cd /opt/storm
+sudo bin/storm nimbus
+cd /opt/storm
+sudo bin/storm supervisor
+cd /opt/storm
+sudo bin/storm ui
+BROWSER localhost:8080
+cd /opt/storm
+sudo wget https://repo1.maven.org/maven2/org/apache/storm/storm-starter/2.8.0/storm-starter-2.8.0.jar
+bin/storm jar storm-starter-2.8.0.jar org.apache.storm.starter.WordCountTopology wordcount-topology
+BROWSER 
+bin/storm kill wordcount-topology
+
+
+#PRACTICAL 10
+#SOLR
+sudo apt install openjdk-17-jdk -y
+java -version
+sudo wget https://downloads.apache.org/lucene/solr/9.5.0/solr-9.5.0.tgz
+OR
+sudo wget https://archive.apache.org/dist/solr/solr/9.4.1/solr-9.4.1.tgz
+ls -lh solr-9.4.1.tgz
+sudo tar xzf solr-9.5.0.tgz
+cd solr-9.5.0
+OR
+sudo tar xzf solr-9.4.1.tgz
+cd solr-9.4.1
+sudo bash bin/install_solr_service.sh /solr-9.4.1.tgz
+sudo systemctl start solr
+sudo systemctl status solr
+sudo systemctl stop solr
+sudo systemctl restart solr
+BROWSER http://localhost:8983/solr
+sudo su - solr
+/opt/solr/bin/solr create -c mycollection -n _default
+/opt/solr/bin/solr create -c mydreams -n _default
+/var/solr/data/mydreams/conf/
+cd /solr-9.4.1
+sudo nano /etc/default/solr.in.sh
+SOLR_PORT="8984"
+SOLR_HEAP="2g"
+SOLR_AUTH_TYPE="basic"
+SOLR_AUTHENTICATION_OPTS="-Dbasicauth=admin:admin123"
+CTRL S Ctrl X
+sudo systemctl restart solr
+curl -X POST -H "Content-Type: application/json" --data '
+{
+  "id": "1",
+  "name": "Sample Document"
+}' http://localhost:8983/solr/ mydreams /update?commit=true
+
+BROWSERhttp://localhost:8983/solr/mydreams/select?q=*
+
+sudo tail -f /var/solr/logs/solr.log
